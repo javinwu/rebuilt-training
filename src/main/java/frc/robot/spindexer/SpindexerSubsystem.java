@@ -1,40 +1,41 @@
-package frc.robot;
+package frc.robot.spindexer;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SpindexerSubsystem extends SubsystemBase {
-    private final TalonFX motor = new TalonFX(-1);
-    private static final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
-
-    static {
-        motorConfig.CurrentLimits.StatorCurrentLimit = 80.0;
-        motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        // positive direction is feeding into launcher
-    }
+    private final TalonFX motor = new TalonFX(SpindexerConst.MOTOR_ID);
 
     public SpindexerSubsystem() {
-        motor.getConfigurator().apply(SpindexerSubsystem.motorConfig);
+        motor.getConfigurator().apply(SpindexerConfig.motorConfig);
     }
 
+    /**
+     * sets motor speed
+     *
+     * @param speed
+     */
     public void moveMotorSpeed(double speed) {
         motor.set(speed);
     }
 
+    /** spins motor */
     public void start() {
-        moveMotorSpeed(0.5);
+        moveMotorSpeed(SpindexerConfig.MOTOR_SPEED);
     }
 
+    /** stops motor */
     public void stop() {
         moveMotorSpeed(0.0);
     }
 
+    /**
+     * returns current motor speed
+     *
+     * @return
+     */
     public double getMotorSpeed() {
         return motor.get();
     }
