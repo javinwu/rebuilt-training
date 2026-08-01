@@ -7,7 +7,12 @@ Trainees, please go to [`TRAINING.md`](TRAINING.md)
 ## Controls
 
 ### Xbox Controller Bindings
-(Add documented controls here)
+
+| Control | Action |
+| - | -
+| Left bumper (hold) | Run the spindexer 
+| D-pad down | Deploy the intake and run its rollers 
+| D-pad up | Stop and stow the intake (also available while disabled) 
 
 ### SmartDashboard Mappings
 What each control is in SmartDashboard, in Keyboard Settings.

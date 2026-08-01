@@ -9,19 +9,31 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.intake.IntakeSubsystem;
 import frc.robot.spindexer.SpindexerSubsystem;
 
 public class Robot extends TimedRobot {
 
     private final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+    private final IntakeSubsystem intake = new IntakeSubsystem();
 
     private final CommandXboxController controller = new CommandXboxController(0);
 
     public Robot() {
-        SmartDashboard.putData("Spindexer", spindexer);
+        initDashboard();
+        initBindings();
+    }
 
-        // controls
+    private void initDashboard() {
+        SmartDashboard.putData("Spindexer", spindexer);
+        SmartDashboard.putData("Intake", intake);
+    }
+
+    // controller bindings
+    private void initBindings() {
         controller.leftBumper().whileTrue(spindexer.startEnd(spindexer::start, spindexer::stop));
+        controller.povDown().onTrue(intake.runOnce(intake::deploy));
+        controller.povUp().onTrue(intake.runOnce(intake::stow).ignoringDisable(true));
     }
 
     @Override
