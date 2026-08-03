@@ -23,7 +23,7 @@ public class SpindexerSubsystem extends SubsystemBase {
 
     /** spins motor */
     public void start() {
-        moveMotorSpeed(SpindexerConfig.MOTOR_SPEED);
+        moveMotorSpeed(SpindexerConst.MOTOR_SPEED);
     }
 
     /** stops motor */
