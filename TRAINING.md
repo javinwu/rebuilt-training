@@ -16,6 +16,7 @@ WPILib is the software suite containing all necessary packages and applications 
     - [View](#view)
     - [Extension Installation](#extension-installation)
         - [Disabling Unnecessary Extensions](#disabling-unnecessary-extensions)
+        - [Live Share](#live-share)
 - [Optional Java Recap](#optional-java-recap)
 - [Programming the Codebase](#programming-the-codebase)
     - [Expectations](#expectations)
@@ -61,6 +62,14 @@ WPILib is the software suite containing all necessary packages and applications 
         - [Intake Bindings](#intake-bindings)
         - [Retrieving Intake Angle](#retrieving-intake-angle)
         - [Robot Constructor Refactoring](#robot-constructor-refactoring)
+    - [Launcher Assembly](#launcher-assembly)
+        - [Control Area Network](#control-area-network)
+        - [Feeder Subsystem](#feeder-subsystem)
+            - [Feeder Requirements](#feeder-requirements)
+        - [Hood Subsystem](#hood-subsystem)
+            - [Hood Specifications](#hood-specifications)
+            - [Recording the Setpoint](#recording-the-setpoint)
+- [Temporary End](#temporary-end)
 
 ## Attribution
 This file and codebase were written by @spacepotatoes3 and @aatle on GitHub.
@@ -149,6 +158,16 @@ Disable the following extensions:
 - `Test Runner for Java`
 - `Project Manager for Java`
 - Any other extensions with a high startup time that you have determined to be not useful (ask mentors)
+
+#### Live Share
+To allow mentors to view your coding in real time, install the `Live Share` extension (by the verified `Microsoft`).
+
+On the left bar, click on the live share icon and share a `Read/Write` link with the mentor.
+
+Mentors:
+- When opening a link, it will replace the last used VS Code window. So if you have existing windows to keep, create a new blank window with `Ctrl`/`Command`+`Shift`+`N`.
+- In the shared workspace, click on the Live Share icon on the left and then click on the trainee's name to follower their pointer.
+- Works best with 1-2 trainees. When mentoring, use split screen, second monitor, or skillful window switching to monitor both trainees.
 
 ## Optional Java Recap
 <details><summary>Optional review</summary>
@@ -280,6 +299,20 @@ This is a mentorship, not a classroom.
 However, please note that mentors will not directly write out code for you unless necessary, because copying code does not induce learning. \
 Please also refrain from copy-pasting previous code; you can type it out quickly with the help of autocomplete and IDE features, which reinforces the syntax.
 
+Mentors:
+- You must monitor how the trainees are doing and provide verbal corrections if something is off (unless it is a repeating/frequent error)
+- You also need to provide suggestions on how to edit code more efficiently, e.g. the following shortcuts:
+    - `Ctrl`+`C` or `Ctrl`+`X` on a whole line without highlighting anything
+    - `Alt`+`Down`/`Up` to move lines
+    - `Ctrl`+`Left`/`Right` to move quickly, and `Ctrl`+`Backspace`
+    - `F2` or `fn`+`F2` to rename symbols
+    - `Ctrl`+`A` to select all code
+    - `Ctrl`+`D` to highlight multiple occurrences
+    - `Ctrl`+`K` `S` to save all files at once
+    - `Ctrl`+`Tab` to switch back to recent tabs
+    - `Ctrl`+`/` to toggle line comment
+    - Save code frequently, to automatically format instead of manually
+
 ### Spindexer Subsystem
 To start, we'll implement the robot's spindexer from scratch.
 
@@ -302,7 +335,7 @@ Luckily, because of some JSON settings I put inside this repository, you can jus
 Let's add a field in `SpindexerSubsystem` for controlling the single motor. \
 The motor controller class is called `TalonFX` (for Kraken motors).
 
-Declaration a private and final `TalonFX` field named `motor`.
+Declare a private and final `TalonFX` field named `motor`.
 
 The `motor` name has a warning because it is not used. Define a default value for the field, setting it to a new `TalonFX` *instance*.
 
@@ -341,7 +374,7 @@ The spindexer motor actually does not require any more configuration because it 
 
 You have now created and initialized a motor configuration object but have not yet applied it to the actual motor. Write a constructor for `SpindexerSubsystem` that takes no arguments.
 
-To apply the motor configuration in `SpindexerConfig` to `motor`, use the `apply()` method of the object returned by the `getConfigurator()` method of the motor object. Pass in the motor config as the argument to the `apply` method.
+To apply the motor configuration in `SpindexerConfig` to `motor`, call `getConfigurator()` on the `motor` followed by calling the `apply()` method on its return value. Pass in the motor config as the argument to the `apply` method.
 
 > Note: whenever a motor configuration is applied, by code or elsewhere, the motor chirps a short melody. This is useful to tell when the code on the robot is all initialized and ready.
 
@@ -407,13 +440,14 @@ A sendable is something we can *send* over NetworkTables (an FRC communication p
 Here, our sendable is the `SpindexerSubsystem`, and the property we want to log is the motor speed.
 
 To log it, we need to override a method in `SpindexerSubsystem`. \
-On a new line in the class body, type in `initSendable` and autocomplete with the suggestion.
+On a new line in the class body, type in `initSendable` without modifiers, and autocomplete with the suggestion. \
+(If no suggestion shows, be sure that your `SpindexerSubsystem` extends from `SubsystemBase`.)
 
 Replace the code inside with a call to the `builder`'s `addDoubleProperty()` method. The `SendableBuilder` is used to build the sendable's properties.
 
 Autocompleting it fills it with 3 arbitrary arguments that we need to replace. Hover over `addDoubleProperty` to see documentation.
 
-We see that the first parameter is a string for the property name; a label. Let's use `"motor speed (frac)"` for this (don't forget the quotes to make it a string).
+We see that the first parameter is a string for the property name; a label. Let's use `"motor speed (frac)"` for this (don't forget the quotes to make it a string). The label should be lowercase.
 
 > Note: Document the units of numerical properties in its label, e.g. rotations, degrees, fraction, meters.
 
@@ -425,7 +459,7 @@ Use a method reference to our new `getMotorSpeed` method.
 
 The last parameter is the setter, which allows a user to change the value on the dashboard, invoking the setter. Passing in `null` means no setter.
 
-However, our `moveMotorSpeed()` is the perfect setter method for this. Use a method reference to `moveMotorSpeed` for the setter argument.
+However, our `moveMotorSpeed()` is the perfect setter method for this. It already takes a `double` like the setter should. Use a method reference to `moveMotorSpeed` for the setter argument.
 
 > Tip: You can add forward slashes `/` to the property key to use or create dropdowns and hierarchies inside the dashboard table.
 
@@ -506,23 +540,18 @@ Then, move `SpindexerSubsystem.java` inside of the new folder. The IDE will ask 
 
 Then, create two files in the folder: `SpindexerConfig.java`, and `SpindexerConst.java`.
 
-Move what you think is appropriate from `SpindexerSubsystem.java` to these new classes.
-
-<details><summary>Recommended refactoring summary</summary>
-
+Apply the following refactoring:
 - Move the motor ID `-1` to `SpindexerConst` as `MOTOR_ID`
 - Move `motorConfig` and its static block to `SpindexerConfig`
 - Move the current limit of `80.0` to a new `SpindexerConfig` constant
 - Move the `start()` motor speed of `0.5` to a new `SpindexerConfig` constant
 
-</details>
-
-Don't forget to commit.
+Don't forget to commit, with commit type `refactor: `.
 
 ##### Documentation
 The core functionality of the spindexer feature is done for now, but there are a few documentation tasks to do.
 
-First, use Javadoc comments to document methods where necessary, specifically your two motor methods. (Javadoc comments are started with `/**` (slash, star, star)).
+First, use Javadoc comments to document methods where necessary, specifically your motor methods. (Javadoc comments are started with `/**` (slash, star, star)).
 
 Fields can also be documented using a Javadoc comment placed before the declaration. Document your motor speed constant, as the operational spindexer power.
 
@@ -533,6 +562,8 @@ We have a lot of placeholder values in the code currently. For every unknown or 
 Note that these documentation tasks should typically be done *while* writing the code, not after writing it.
 
 Don't forget to commit.
+
+This marks the completion of the first subsystem.
 
 ### Commands and Bindings
 In order for the driver to utilize these methods, we have to create controller *bindings* that tie *controls* (e.g. right trigger) to *actions* (WPILib command objects). We use an Xbox controller. \
@@ -965,6 +996,153 @@ Be sure to add the intake subsystem to the dashboard in `Robot.java`!
 In `Robot.java`, notice that the robot constructor currently performs two different tasks: adding sendables to the dashboard, and initializing bindings.
 
 To better organize the code, extract out these tasks into separate methods, `initDashboard()` and `initBindings()`.
+
+### Launcher Assembly
+Now we can start on the subsystems that make up our *launcher assembly* (feeder, hood, shooter, turret).
+
+<sub><sup>Mentors, explain what each subsystem in the launcher assembly is.</sup></sub>
+
+For better organization, create a folder called `launcher` to store all of these four subsystems.
+
+#### Control Area Network
+First, a new electrical aspect of the launcher assembly needs to be discussed.
+
+Recall that every device (e.g. motor) on the robot has a unique CAN ID, aka device ID, that is used to identify it. But what is CAN?
+
+CAN stands for Control Area Network, which is the nervous system of the robot. Electrically, it is wired with yellow and green wires.
+
+This system is controlled by a central brain, which is the CAN Bus. The main or default CAN bus is actually the roboRIO itself (the main robot computer). However, additional dedicated CAN buses can be added to the robot to reduce traffic on them.
+
+In code, a `CANBus` object can be instantiated with the registered name of the CAN bus. (It is safe to make multiple instances referring to the same CAN bus.)
+```java
+new CANBus() // new default CAN bus (usually roboRIO)
+new CANBus("launcher") // new CAN bus referring to bus named launcher
+CANBus.roboRIO() // new CAN bus explicitly referring to roboRIO
+```
+
+Then, these `CANBus` objects may be passed into device constructors:
+```java
+private final TalonFX motor = new TalonFX(SubsysConst.MOTOR_ID, SubsysConst.CAN_BUS);
+```
+If no `CANBus` is provided, then the device defaults to using the default `CANBus`.
+
+If a device is put on the wrong `CANBus` in code, then it will not work. Be sure that any electrical CAN bus changes are immediately updated in the codebase.
+
+For the launcher assembly, all subsystem devices use a CAN bus with the name `launcher`, *except for the feeder subsystem*.
+
+#### Feeder Subsystem
+We'll set up the feeder subsystem first.
+
+The feeder subsystem will be nearly identical in functionality to the spindexer.
+
+First, make your `feeder` folder and the three files inside it. Populate any basic constants or configurations, adding placeholders and comments when necessary.
+
+Also create a new `CAN_BUS` constant in `FeederConst`, initialized to a `new CANBus()` (no arguments).
+
+For the `TalonFX()` motor constructor, pass `FeederConst`'s `CAN_BUS` in as the second argument. We are doing this to be explicit since the feeder is the exception in the launcher.
+
+##### Feeder Requirements
+From here, you can write the rest of `FeederSubsystem.java` on your own. It should have:
+- A motor configured with:
+  - Stator current limit (untuned)
+  - Neutral mode set to coast
+  - Motor direction with intuitive convention (untuned)
+- Method to set motor speed
+- Methods to start, stop, brake, and reverse
+- Method to get the current motor speed
+- Correctly initialized dashboard properties
+- Appropriate documentation and comments
+- Appropriate code organization according to our codebase conventions
+- Subsystem is properly initialized inside `Robot`
+
+You do not have to add bindings or a default command for the feeder yet; we will do that when all subsystems of the launcher are set up.
+
+You may reference:
+- 1st, spindexer or subsystem that you wrote earlier (do not copy-paste)
+- 2nd, other trainees (not their code), if possible
+- 3rd, mentors
+
+You may not reference AI, browser, or outside people for writing the simple feeder subsystem.
+
+Once you complete the feeder, a mentor will show you any mistakes or problems.
+
+<details><summary>Potential problems</summary>
+
+- Forgot to initialize subsystem as a field in `Robot`
+- Forgot to send feeder to `SmartDashboard` in `Robot.initDashboard()`
+- Forgot to extend from `SubsystemBase`
+- Missing or inaccurate modifiers
+- Incorrect naming convention of symbol
+- Forgot to document unit of dashboard property in the label
+- Did not add setter for dashboard property
+- Did not write any Javadoc comments
+- Did not write any TODO comments
+- Forgot to document direction convention
+- Constant or config field declared in wrong place
+- Placed files directly inside `launcher` folder instead of new `feeder` subfolder
+
+</details>
+
+#### Hood Subsystem
+Next, we'll create our hood subsystem.
+
+The hood subsystem will work similarly to the `deployMotor` in `IntakeSubsystem`.
+
+Before you start, think of what convention you want to use for the hood's position. (There are really two acceptable options.)
+
+##### Hood Specifications
+Info:
+- Hood motor is on the launcher CAN bus
+- Fuel is shot perpendicularly to where the hood points
+- Hood has one hardstop usable for stow, but has no encoder
+- The hardstop is at `16.394` degrees above the horizontal; or equivalently, the maximum fuel launch pitch is `73.606` degrees above horizontal
+- The hood gear ratio, rotor to mechanism, is `24:1`
+
+Notes:
+- The term for hood position/angle is *pitch*
+- There is no second hardstop, but the useful range of the hood for launching is obviously physically limited
+
+**Requirements:**
+- A motor properly initialized and configured
+- Method for moving hood pitch, with appropriate safety
+- Method to stow hood
+- Method to get pitch of hood
+- Appropriate dashboard properties
+- Correct conventions and documentation
+
+You do not have to add bindings or a default command for the hood yet; we will do that when all subsystems of the launcher are set up.
+
+Same rules for referencing information as the feeder.
+
+<details><summary>Additional potential problems</summary>
+
+- Did not configure `Feedback.SensorToMechanismRatio` to gear ratio
+- Did not configure software limit switches for both directions
+- Did not clamp angle parameter in method to move pitch
+- Inconsistent usage of pitch convention
+- Forgot to document pitch convention
+- Did not use Units library
+- Used a name other than `motor` (the most concise) for the motor field
+- +Potential problems listed from feeder section
+
+</details>
+
+##### Recording the Setpoint
+One thing that our code is not aware of is what the current target angle is. The target position of a mechanism is called its *setpoint*.
+
+Take a minute to think of how you could implement a field that always has the current target pitch. You would not need to make any additional method calls.
+
+The way that you can easily implement a field that has the setpoint is by updating the field inside of your hood movement method.
+
+The only time that the target pitch changes is when your movement method is called. So, by storing the given pitch in a field when the method executes, the correct setpoint is always accessible later.
+
+Define a private `Angle` field named `targetPitch`. Modify your movement method to set the field plus use the field for the request.
+
+Then use `targetPitch` to add a new dashboard property.
+
+In general, these setpoint fields should be used for any movement that uses a control request instead of `set()` or `setVoltage()` methods.
+
+Once you are done with this, go back to `IntakeSubsystem` and implement a setpoint field and dashboard property for the angle.
 
 ## Temporary End
 The rest of training is being actively written.
